@@ -50,7 +50,7 @@ private slots:
     void on_action_IDV_Backup_triggered();
 
     //void waitSeconds(int s);
-    bool copyFile(const QString &fromFIleName, const QString &toFileName);
+    bool copyFile(QString &fromFIleName, QString &toFileName);
     //long long dirFileSize(QString);
     //bool deleteDir(const QString &path);
 

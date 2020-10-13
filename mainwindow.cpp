@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "copythread.h"
 #include "ui_mainwindow.h"
 #include <QDesktopServices>
 #include <QUrl>
@@ -9,11 +8,10 @@
 #include <windows.h>
 #include <QTcpSocket>
 #include <QtNetwork>
+#include <qdebug.h>
 
 #include <QCoreApplication>
 
-
-//#include <djDraw.h>
 
 bool dir_flag;
 QString idv_dir;
@@ -38,6 +36,64 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+bool copyDirectoryFiles(const QString &fromDir, const QString &toDir, bool coverFileIfExist) //拷贝文件夹
+{
+    QDir sourceDir(fromDir);
+    QDir targetDir(toDir);
+    if(!targetDir.exists()){    /**< 如果目标目录不存在，则进行创建 */
+        if(!targetDir.mkdir(targetDir.absolutePath()))
+            return false;
+    }
+
+    QFileInfoList fileInfoList = sourceDir.entryInfoList();
+    foreach(QFileInfo fileInfo, fileInfoList){
+        if(fileInfo.fileName() == "." || fileInfo.fileName() == "..")
+            continue;
+
+        if(fileInfo.isDir()){    /**< 当为目录时，递归的进行copy */
+            if(!copyDirectoryFiles(fileInfo.filePath(),
+                targetDir.filePath(fileInfo.fileName()),
+                coverFileIfExist))
+                return false;
+        }
+        else{            /**< 当允许覆盖操作时，将旧文件进行删除操作 */
+            if(coverFileIfExist && targetDir.exists(fileInfo.fileName())){
+                targetDir.remove(fileInfo.fileName());
+            }
+
+            /// 进行文件copy
+            if(!QFile::copy(fileInfo.filePath(),
+                targetDir.filePath(fileInfo.fileName()))){
+                    return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool if_copy_final(QString pathsor, QString pathback)        //复制是否结束
+{
+    QString pathbac = pathback;
+    //pathbac += 'video';
+
+    QDir *sordir = new QDir(pathsor);   //sourse
+    QStringList filtersor;      //sourse
+    QList<QFileInfo> *fileInfosor=new QList<QFileInfo>(sordir->entryInfoList(filtersor)); //sourse
+    int countsor=fileInfosor->count(); //sourse
+
+    QDir *bacdir = new QDir(pathbac);   //backup
+    QStringList filterbac;      //backup
+    QList<QFileInfo> *fileInfobac=new QList<QFileInfo>(bacdir->entryInfoList(filterbac)); //backup
+    int countbac=fileInfobac->count(); //backup
+
+    /*debug*/
+    qDebug("%d %d\n",countsor,countbac);
+    //qDebug() << countsor << ' ' << countbac << endl;
+
+    if(countsor!=countbac) return false;
+    else return true;
+}
 
 void MainWindow::on_action_triggered()      //菜单->退出
 {
@@ -80,6 +136,25 @@ void MainWindow::on_action_3_triggered()        //向朋友推荐这个软件
     return;
 }
 
+quint64 dirFileSize(const QString &path)
+{
+    QDir dir(path);
+    quint64 size = 0;
+    //dir.entryInfoList(QDir::Files)返回文件信息
+    foreach(QFileInfo fileInfo, dir.entryInfoList(QDir::Files))
+    {
+        //计算文件大小
+        size += fileInfo.size();
+    }
+    //dir.entryList(QDir::Dirs|QDir::NoDotAndDotDot)返回所有子目录，并进行过滤
+    foreach(QString subDir, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+    {
+        //若存在子目录，则递归调用dirFileSize()函数
+        size += dirFileSize(path + QDir::separator() + subDir);
+    }
+    return size;
+}
+
 void MainWindow::on_pushButton_clicked()    //PushBottom    选择路径
 {
     QString str_sor_dir = QFileDialog :: getExistingDirectory (0,"请选择客户端所在文件夹",".");
@@ -92,7 +167,7 @@ void MainWindow::on_pushButton_clicked()    //PushBottom    选择路径
     dir_flag++;
     idv_dir += "/Documents/video";
     idv_pickup_dir += "/Documents/";
-    idv_backup_dir += "/chiqiao_backup/";
+    idv_backup_dir += "/chiqiao_backup/video";
 
     //判断文件夹是否存在
     QDir *photo = new QDir;
@@ -100,11 +175,10 @@ void MainWindow::on_pushButton_clicked()    //PushBottom    选择路径
 
     if(!exist)
     {
-        QMessageBox::warning(this,tr("创建文件夹"),tr("当前路径不存在录像文件夹！请检查是否选择正确文件夹"));
+        QMessageBox::warning(this,tr("选择路径"),tr("当前路径不存在录像文件夹！请检查是否选择正确文件夹"));
         MainWindow::on_pushButton_clicked();
         return;
     }
-
 
     QDir dirrr;
     if (!dirrr.exists(idv_backup_dir))
@@ -113,15 +187,45 @@ void MainWindow::on_pushButton_clicked()    //PushBottom    选择路径
         //qDebug() << "新建目录是否成功" << res;
     }
 
-    QString idv_backup_size="备份文件占用大小：123";
-    QString idv_video_size="录像文件占用大小：123";
-    ui->label->setText(idv_backup_size);
-    ui->label_2->setText(idv_video_size);
+    QString idv_backup_size="备份文件占用大小：";
+    QString idv_video_size="录像文件占用大小：";
+
+    long long backupSizeTemp, videoSizeTemp;
+    backupSizeTemp = dirFileSize(idv_backup_dir)/1024/1024;    //备份文件占用大小
+    videoSizeTemp = dirFileSize(idv_dir)/1024/1024;    //录像文件占用大小
+
+    QString backupSizeTempString;
+    while(backupSizeTemp){
+        backupSizeTempString += backupSizeTemp%10+'0';
+        backupSizeTemp/=10;
+    }
+    QString videoSizeTempString;
+    while(videoSizeTemp){
+        videoSizeTempString += backupSizeTemp%10+'0';
+        videoSizeTemp/=10;
+    }
+    int backupSizeTempStringLen, videoSizeTempStringLen;
+    backupSizeTempStringLen = backupSizeTempString.length();
+    videoSizeTempStringLen = videoSizeTempString.length();
+    while(backupSizeTempStringLen)
+    {
+        idv_backup_size += backupSizeTempString[backupSizeTempStringLen-1];
+        backupSizeTempStringLen--;
+    }
+    while(videoSizeTempStringLen)
+    {
+        idv_video_size += videoSizeTempString[videoSizeTempStringLen-1];
+        videoSizeTempStringLen--;
+    }
+    idv_backup_size += " MB";
+    idv_video_size += " MB";
+    ui->label->setText(idv_backup_size);   //备份文件占用大小
+    ui->label_2->setText(idv_video_size); //录像文件占用大小
     return;
 }
 
 
-bool MainWindow::copyFile(const QString &fromFIleName, const QString &toFileName)
+bool MainWindow::copyFile(QString &fromFIleName, QString &toFileName)
 {
     char* byteTemp = new char[4096];//字节数组
     int fileSize = 0;
@@ -136,7 +240,6 @@ bool MainWindow::copyFile(const QString &fromFIleName, const QString &toFileName
     fromfile.setFileName(fromFIleName);
     if(!fromfile.open(QIODevice::ReadOnly)){
         qDebug() << "open fromfile failed！！！";
-        QMessageBox::critical(this, tr("Error"), tr("Could not open file"));
         return false;
     }
     fileSize = fromfile.size();
@@ -170,16 +273,17 @@ void MainWindow::on_action_6_triggered()    //如何使用
 
 void MainWindow::on_pushButton_4_clicked()  //备份所有录像
 {
-    //ui->progressBar_copy->setValue(0);
+    ui->progressBar_copy->setValue(0);
     if(!dir_flag)
     {
         QMessageBox::warning(this,"警告","没有选择客户端路径，请先选择客户端路径后再试","OK");
         return;
     }
     else{
+        /*
         //CopyThread::fileCopy(QString fileName)
         //ui->progressBar_copy->setValue(30);
-        if(copyDirAndFile(idv_dir, idv_backup_dir))
+        if(copyFile(idv_dir, idv_backup_dir))
         {
             //waitSeconds(5);
 
@@ -188,6 +292,20 @@ void MainWindow::on_pushButton_4_clicked()  //备份所有录像
         }
         else
             QMessageBox::warning(this,"备份","备份失败！","OK");
+        */
+        //copyDirAndFile(idv_dir, idv_backup_dir);
+        copyDirectoryFiles(idv_dir, idv_backup_dir, 0);
+        double progress_backup_temp=0;
+        while(!if_copy_final(idv_dir, idv_backup_dir))
+        {
+            if(progress_backup_temp<=97) progress_backup_temp+=0.01;
+            ui->progressBar_copy->setValue(progress_backup_temp);
+        }
+        if(if_copy_final(idv_dir, idv_backup_dir))
+        {
+            ui->progressBar_copy->setValue(100);
+            QMessageBox::information(this,"备份","备份成功！","OK");
+        }
     }
 
     return;
@@ -201,13 +319,18 @@ void MainWindow::on_pushButton_6_clicked()  //还原所有录像
         return;
     }
     else{
-        QString huanYuan_dir;
-        huanYuan_dir = idv_backup_dir;
-        huanYuan_dir += "/video/";
-        if(copyFile(huanYuan_dir, idv_pickup_dir))
-            QMessageBox::information(this,"还原","还原成功！","OK");
-        else
-            QMessageBox::warning(this,"还原","还原失败！","OK");
+        copyDirectoryFiles(idv_backup_dir, idv_dir, 0);
+        double progress_backup_temp=0;
+        while(!if_copy_final(idv_backup_dir, idv_dir))
+        {
+            if(progress_backup_temp<=97) progress_backup_temp+=0.01;
+            ui->progressBar_copy->setValue(progress_backup_temp);
+        }
+        if(if_copy_final(idv_backup_dir, idv_dir))
+        {
+            ui->progressBar_copy->setValue(100);
+            QMessageBox::information(this,"备份","备份成功！","OK");
+        }
     }
     return;
 }
@@ -267,7 +390,7 @@ void MainWindow::on_pushButton_8_clicked()  //删除所有备份文件
     if (!dirrr.exists(idv_backup_dir))
     {
         dirrr.mkpath(idv_backup_dir);
-        //qDebug() << "新建目录成功";
+        //qDebug() << "新建目录是否成功" << res;
     }
     return;
 }
@@ -299,8 +422,3 @@ bool copyDirAndFile(QFileInfo file, QString path)
 
 
 
-void MainWindow::on_action_2_triggered()
-{
-    QDesktopServices::openUrl(QUrl(QString("https://chiqiao.rthe.net/feedback.html")));
-    return;
-}
