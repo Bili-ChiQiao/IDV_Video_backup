@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 
+#include <QComboBox>
 #include <QTcpServer>
 #include <QCoreApplication>
 
@@ -50,10 +51,31 @@ private slots:
     void on_action_IDV_Backup_triggered();
 
     //void waitSeconds(int s);
-    bool copyFile(QString &fromFIleName, QString &toFileName);
+    bool copyFile(QString fromFIleName, QString toFileName, bool flaggg);
     //long long dirFileSize(QString);
     //bool deleteDir(const QString &path);
 
+    void on_pushButton_2_clicked();
+
+    void on_pushButton_3_clicked();
+
+    void on_pushButton_9_clicked();
+
+    void on_pushButton_10_clicked();
+
+    void on_pushButton_11_clicked();
+
+    void on_pushButton_12_clicked();
+
+    void on_pushButton_5_clicked();
+
+    void on_pushButton_13_clicked();
+
+    void on_pushButton_14_clicked();
+
+    void checkingUpdates();
+
+    void on_commandLinkButton_clicked();
 
 private:
     Ui::MainWindow *ui;

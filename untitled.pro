@@ -1,6 +1,10 @@
-QT       += core gui
+#-------------------------------------------------
+#
+# Project created by 赤桥 2020-9-6 19:50 GMT+8
+#
+#-------------------------------------------------
 
-QT       += network
+QT       += core gui concurrent network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -15,7 +19,8 @@ SOURCES += \
     mainwindow.cpp
 
 HEADERS += \
-    mainwindow.h
+    mainwindow.h \
+    virsion.h
 
 FORMS += \
     mainwindow.ui
@@ -27,3 +32,6 @@ TRANSLATIONS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RC_ICONS = logo_n.ico
+CONFIG+= console
