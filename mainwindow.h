@@ -45,15 +45,9 @@ private slots:
 
     void on_pushButton_8_clicked();
 
-    //void on_pushButton_2_clicked(); //无此按钮
-
-    //void on_pushButton_3_clicked(); //无此按钮
     void on_action_IDV_Backup_triggered();
 
-    //void waitSeconds(int s);
-    bool copyFile(QString fromFIleName, QString toFileName, bool flaggg);
-    //long long dirFileSize(QString);
-    //bool deleteDir(const QString &path);
+    bool copyFile(QString fromFIleName, QString toFileName, bool flaggg, bool);
 
     void on_pushButton_2_clicked();
 
@@ -67,8 +61,6 @@ private slots:
 
     void on_pushButton_12_clicked();
 
-    void on_pushButton_5_clicked();
-
     void on_pushButton_13_clicked();
 
     void on_pushButton_14_clicked();
@@ -76,6 +68,12 @@ private slots:
     void checkingUpdates();
 
     void on_commandLinkButton_clicked();
+
+    void on_commandLinkButton_2_clicked();
+
+    void on_commandLinkButton_3_clicked();
+
+    void on_pushButton_5_clicked();
 
 private:
     Ui::MainWindow *ui;

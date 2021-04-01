@@ -1,26 +1,22 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "virsion.h"
+#include "version.h"
 #include <QDesktopServices>
 #include <QUrl>
 #include "QMessageBox"
 #include <QClipboard>
 #include <QFileDialog>
 #include <windows.h>
-#include <QTcpSocket>
-#include <QtNetwork>
-#include <qdebug.h>
-#include <windows.h>
-#include <QCoreApplication>
 #include <iostream>
-#include <thread>
 #include <QtConcurrent>
 #include <cmath>
 #include <cstring>
 #include <Urlmon.h>
 
 
+
 std::string vis_str;
+int newest_version_int;
 
 bool dir_flag, dir_flag_p;
 QString idv_dir;
@@ -29,29 +25,18 @@ QString idv_dir_root;
 QString idv_pickup_dir;
 bool copyDirAndFile(QFileInfo file, QString path);
 bool checkingUpdateResult = 0, whetherCheckingUpdateSucess;
-
-//检查更新
-
-//检查更新
+void whetherUpdate();
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     checkingUpdates();
+    whetherUpdate();
+    Sleep(500);
     ui->setupUi(this);
     setWindowTitle("第五人格录像备份软件 by赤桥");
-    std::cout<<"------------Identity V Video Backup Software by ChiQiao-----------\n";
-    std::cout<<"-----------------------------Debug-------------------------------\n";
-    std::cout<<"-------------------------------------------Debug-----------------\n";
-    std::cout<<"---------------------------------------Debug---------------------\n";
-    std::cout<<"-----------------------------------Debug-------------------------\n";
-    std::cout<<"--------------------------------Debug----------------------------\n";
-    std::cout<<"----------------------------Debug--------------------------------\n";
-    std::cout<<"------------------------Debug------------------------------------\n";
-    std::cout<<"--------------------Debug----------------------------------------\n";
-    std::cout<<"----------------Debug--------------------------------------------\n";
-    std::cout<<"-----------------------------Debug-------------------------------\n";
+
 
 }
 
@@ -60,33 +45,51 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void whetherUpdate() {
+    if(checkingUpdateResult == 1 && whetherCheckingUpdateSucess) {
+        QMessageBox msgBoxUpdate;
+        msgBoxUpdate.setText("检查更新");
+        msgBoxUpdate.setInformativeText("当前不是最新版本，要下载最新版本吗？");
+        msgBoxUpdate.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+        msgBoxUpdate.setDefaultButton(QMessageBox::Ok);
+        if(msgBoxUpdate.exec()==QMessageBox::Cancel) return;
+        else {
+            QDesktopServices::openUrl(QUrl(QString("http://www.chiqiao.plus/")));
+            return;
+        }
+    }
+}
 
 void MainWindow::checkingUpdates()  //检查更新
 {
-    std::cout<<"Checking Update..."<<std::endl;
-    system("wget http://ftp6427026.host122.sanfengyun.cn/vis.txt");
-    FILE *fp = freopen("vis.txt","r",stdin);
-    std::cin>>vis_str;
-    fclose(fp);
-    system("cls");
-    system("del vis.txt");
-    if(vis_str.length()) {
-        //检查到新版本
-        whetherCheckingUpdateSucess = 1;    //记录查询版本成功
-        std::cout<<"This Version: "<<this_vis_str<<std::endl;
-        std::cout<<"Newest Version: "<<vis_str<<std::endl;
-        if(vis_str==this_vis_str)
-        {
-            std::cout<<"This software is the latest version!"<<std::endl;
-            checkingUpdateResult = 1;
+    QtConcurrent::run([]()
+    {
+        system("wget http://www.chiqiao.plus/getNewestVersion.txt");
+        Sleep(500);
+        FILE *fp = freopen("getNewestVersion.txt","r",stdin);
+        std::cin>>vis_str>>newest_version_int;
+        fclose(fp);
+        system("cls");
+        system("del getNewestVersion.txt");
+        if(vis_str.length()) {
+            //检查到新版本
+            whetherCheckingUpdateSucess = 1;    //记录查询版本成功
+            std::cout<<"This Version: "<<this_version_str<<std::endl;
+            std::cout<<"Newest Version: "<<vis_str<<std::endl;
+            if(newest_version_int<=version_int)
+            {
+                std::cout<<"This software is the latest version!"<<std::endl;
+                checkingUpdateResult = 1;
+            }
+            else{
+                std::cout<<"This software is not the latest version!"<<std::endl;
+            }
+        } else {
+            std::cout<<"This Version: "<<this_version_str<<std::endl;
+            std::cout<<"Unable to search for version information. Please check network connection!"<<std::endl;
         }
-        else{
-            std::cout<<"This software is not the latest version!"<<std::endl;
-        }
-    } else {
-        std::cout<<"This Version: "<<this_vis_str<<std::endl;
-        std::cout<<"Unable to search for version information. Please check network connection!"<<std::endl;
-    }
+    });
+    //system("wget http://www.chiqiao.plus/getNewestVersion.txt");
 
 }
 
@@ -106,8 +109,8 @@ bool copyDirectoryFiles(const QString &fromDir, const QString &toDir, bool cover
 
         if(fileInfo.isDir()){    /*< 当为目录时，递归的进行copy */
             if(!copyDirectoryFiles(fileInfo.filePath(),
-                targetDir.filePath(fileInfo.fileName()),
-                coverFileIfExist))
+                                   targetDir.filePath(fileInfo.fileName()),
+                                   coverFileIfExist))
                 return false;
         }
         else{            /*< 当允许覆盖操作时，将旧文件进行删除操作 */
@@ -117,17 +120,39 @@ bool copyDirectoryFiles(const QString &fromDir, const QString &toDir, bool cover
 
             // 进行文件copy
             if(!QFile::copy(fileInfo.filePath(),
-                targetDir.filePath(fileInfo.fileName()))){
-                    return false;
+                            targetDir.filePath(fileInfo.fileName()))){
+                return false;
             }
         }
     }
     return true;
 }
 
+quint64 sizeOfPath(const QString &path)
+{
+    QDir dir(path); //这个类可以提供文件的目录和类容
+    qint64 sizeP = 0;
+    //得到文件目录下的所有的文件和目录
+    foreach(QFileInfo fileInfo, dir.entryInfoList(QDir::Files))
+    {
+        sizeP += fileInfo.size();    //把所有文件的大小加起来
+    }
+
+    //得到所有子目录下文件的大小
+    //列出目录列表，不列出特殊的条目，“.”和".."
+    foreach(QString subDir, dir.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+    {
+        //路径+当前系统下的分割符+目录名
+        sizeP += sizeOfPath(path + QDir::separator() + subDir);    //递归调用，遍历所有目录，深度优先
+    }
+
+
+    return sizeP;
+}
+
 bool if_copy_final(QString pathsor, QString pathback)        //复制是否结束
 {
-    QString pathbac = pathback;
+    //QString pathbac = pathback;
     //pathbac += 'video';
 
     QDir *sordir = new QDir(pathsor);   //sourse
@@ -135,14 +160,15 @@ bool if_copy_final(QString pathsor, QString pathback)        //复制是否结�
     QList<QFileInfo> *fileInfosor=new QList<QFileInfo>(sordir->entryInfoList(filtersor)); //sourse
     int countsor=fileInfosor->count(); //sourse
 
-    QDir *bacdir = new QDir(pathbac);   //backup
+    QDir *bacdir = new QDir(pathback);   //backup
     QStringList filterbac;      //backup
     QList<QFileInfo> *fileInfobac=new QList<QFileInfo>(bacdir->entryInfoList(filterbac)); //backup
     int countbac=fileInfobac->count(); //backup
 
-    printf("%d %d\n",countsor,countbac);    //debug
+    //printf("%d %d\n",countsor,countbac);    //debug
 
-    if(countsor<countbac) return false;
+    if(countsor<countbac || sizeOfPath(pathsor)<sizeOfPath(pathback)) return false;
+    //if(countsor<countbac) return false;
     else return true;
 }
 
@@ -181,7 +207,7 @@ void MainWindow::on_action_13_triggered()   //关于->关于作者
 void MainWindow::on_action_3_triggered()        //向朋友推荐这个软件
 {
     QClipboard *clip=QApplication::clipboard();
-    clip->setText("Hi！这有一个软件可以备份和还原第五人格录像的软件！欢迎来下载哦！\n下载链接：https://chiqiao.rthe.net/download.html\n作者B站：赤桥");       //设置粘贴板内容
+    clip->setText("Hi！这有一个软件可以备份和还原第五人格录像的软件！欢迎来下载哦！\n下载链接：http://www.chiqiao.plus\n作者B站：赤桥");       //设置粘贴板内容
 
     QMessageBox::information(this,"已复制到剪贴板","已复制到剪贴板，直接粘贴给朋友就可以啦~");                     //提示对话框
     return;
@@ -235,7 +261,7 @@ quint64 du(const QString &path)
             } //if
         }   //if
     } //if
-    std::cout<<curSize<<unit<<"\t"<<qPrintable(path)<<std::endl;
+    //std::cout<<curSize<<unit<<"\t"<<qPrintable(path)<<std::endl;
     return size;
 }
 
@@ -289,14 +315,12 @@ void MainWindow::on_pushButton_clicked()    //PushBottom    选择路径
     QString str_sor_dir = QFileDialog :: getExistingDirectory (0,"请选择客户端所在文件夹",".");
     idv_dir = str_sor_dir;
     idv_dir_root = str_sor_dir;
-    idv_backup_dir = str_sor_dir;
-    idv_pickup_dir = str_sor_dir;
+
     int a=str_sor_dir.length();
     if(!a) return;
     dir_flag++;
     idv_dir += "/Documents/video";
-    idv_pickup_dir += "/Documents/";
-    idv_backup_dir += "/chiqiao_backup/video";
+
 
     //判断文件夹是否存在
     QDir *photo = new QDir;
@@ -308,6 +332,17 @@ void MainWindow::on_pushButton_clicked()    //PushBottom    选择路径
         MainWindow::on_pushButton_clicked();
         return;
     }
+    ui->pushButton_5->setEnabled(true);
+    return;
+}
+
+void MainWindow::on_pushButton_5_clicked()  //PushBotton5    选择存储路径
+{
+    QString str_backup_dir = QFileDialog :: getExistingDirectory (0,"请选择备份文件存储路径，建议为空文件夹",".");
+    idv_backup_dir = str_backup_dir;
+    idv_pickup_dir = str_backup_dir;
+    idv_pickup_dir += "/Documents/";
+    idv_backup_dir += "/chiqiao_backup/video";
 
     QDir dirrr;
     if (!dirrr.exists(idv_backup_dir))
@@ -317,22 +352,57 @@ void MainWindow::on_pushButton_clicked()    //PushBottom    选择路径
     idv_backup_size="";
     idv_video_size="";
     pathSize();
-
+    ui->pushButton_4->setEnabled(true);
+    ui->pushButton_6->setEnabled(true);
+    ui->pushButton_7->setEnabled(true);
+    ui->pushButton_8->setEnabled(true);
     ui->label->setText(idv_backup_size);   //备份文件占用大小
     ui->label_2->setText(idv_video_size); //录像文件占用大小
-    return;
 }
 
-
-bool MainWindow::copyFile(QString path1, QString path2, bool flaggg)
+bool MainWindow::copyFile(QString path1, QString path2, bool flaggg, bool retry)
 {
-    copyDirectoryFiles(path1, path2, 0);
+    if(copyDirectoryFiles(path1, path2, 1))
+    {
+        ui->progressBar_copy->setValue(100);
+        if(!flaggg) QMessageBox::information(this,"备份","备份成功！","OK");
+        else QMessageBox::information(this,"还原","还原成功！","OK");
+    }
+    return true;
+}
+
+/*
+bool MainWindow::copyFile(QString path1, QString path2, bool flaggg, bool retry)
+{
     double progress_backup_temp=0, time_temp=0;
+    if(!retry) {
+        copyDirectoryFiles(path1, path2, 1);
+    }
     while(!if_copy_final(idv_dir, idv_backup_dir))
     {
         if(time_temp==10000){
-            if(!flaggg) QMessageBox::warning(this,"备份","请求超时，备份失败！","OK");
-            else QMessageBox::warning(this,"还原","请求超时，还原失败！","OK");
+            if(!retry) {
+                QMessageBox msgBoxFail;
+                msgBoxFail.setText("失败！");
+                if(!flaggg) msgBoxFail.setInformativeText("请求超时，备份失败，是否重试？");
+                else msgBoxFail.setInformativeText("请求超时，还原失败，是否重试？");
+                msgBoxFail.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+                msgBoxFail.setDefaultButton(QMessageBox::Ok);
+                if(msgBoxFail.exec()==QMessageBox::Cancel) return false;
+                else {
+                    std::string path1_str = path1.toStdString();
+                    std::string path2str = path2.toStdString();
+                    std::string sys_copy = "xcopy ";
+                    sys_copy += path1_str;
+                    sys_copy += " ";
+                    sys_copy += path2str;
+                    system(sys_copy.data());
+                    return copyFile(path1, path2, flaggg, 1);
+                }
+            } else {
+                if(!flaggg) QMessageBox::warning(this,"备份","备份结束！","OK");
+                else QMessageBox::warning(this,"还原","还原结束！","OK");
+            }
             return false;
         }
         if(progress_backup_temp<=97 && time_temp<=1000) progress_backup_temp+=0.01;
@@ -348,11 +418,11 @@ bool MainWindow::copyFile(QString path1, QString path2, bool flaggg)
     }
     return true;
 }
-
+*/
 
 void MainWindow::on_action_6_triggered()    //如何使用
 {
-    QDesktopServices::openUrl(QUrl(QString("https://chiqiao.rthe.net/howtouse.html")));
+    QDesktopServices::openUrl(QUrl(QString("http://www.chiqiao.plus/help.html")));
     return;
 }
 
@@ -367,7 +437,7 @@ void MainWindow::on_pushButton_4_clicked()  //备份所有录像
         return;
     }
     else{
-        copyFile(idv_dir, idv_backup_dir, 0);
+        copyFile(idv_dir, idv_backup_dir, 0, 0);
     }
 
     idv_backup_size="";
@@ -387,7 +457,7 @@ void MainWindow::on_pushButton_6_clicked()  //还原所有录像
         return;
     }
     else{
-        copyFile(idv_backup_dir, idv_dir, 1);
+        copyFile(idv_backup_dir, idv_dir, 1, 0);
     }
     idv_backup_size="";
     idv_video_size="";
@@ -471,8 +541,7 @@ void MainWindow::on_pushButton_8_clicked()  //删除所有备份文件
 
 void MainWindow::on_action_IDV_Backup_triggered()
 {
-    //https://chiqiao.rthe.net/
-    QDesktopServices::openUrl(QUrl(QString("https://chiqiao.rthe.net/download.html")));
+    QDesktopServices::openUrl(QUrl(QString("http://www.chiqiao.plus/")));
 }
 
 
@@ -520,19 +589,31 @@ void pathSize_p()
 
 void MainWindow::on_pushButton_2_clicked()
 {
-    QtConcurrent::run([]()
-    {
-        system("adb devices");
-    });
-    QMessageBox msgBoxPhoneConnection;
+    //system("adb devices");
+
+
+    std::string adbDevicesPath = "adbdevice.exe";
+    int adbDevicesRun = system(adbDevicesPath.data());
+    //std::cout<<adbDevicesRun<<endl;
+    //返回0为连接成功 返回-1则连接不成功
+    if(adbDevicesRun==0) {
+        QMessageBox::information(this,"连接手机","手机连接成功！","OK");
+        ui->pushButton_3->setEnabled(true);
+        return;
+    } else {
+        QMessageBox::information(this,"未成功连接手机","请确认手机是否连接或USB调试是否打开","OK");
+        return;
+    }
+
+
+    /*QMessageBox msgBoxPhoneConnection;
     msgBoxPhoneConnection.setText("请确认控制台输出中“List of devices attached”下方是否有设备连接");
     msgBoxPhoneConnection.setInformativeText("如果有请按下“Ok”，否则请确认手机是否连接或USB调试是否打开");
     msgBoxPhoneConnection.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
     msgBoxPhoneConnection.setDefaultButton(QMessageBox::Ok);
-    if(msgBoxPhoneConnection.exec()==QMessageBox::Cancel) return;
+    if(msgBoxPhoneConnection.exec()==QMessageBox::Cancel) return;*/
     //QMessageBox::information(this,"请确认","请确认控制台输出中“List of devices attached”下方是否有设备连接\n如果有请继续，否则请确认手机是否连接或USB调试是否打开","OK");
-    ui->pushButton_3->setEnabled(true);
-    return;
+
 }
 
 void MainWindow::on_pushButton_3_clicked()
@@ -613,7 +694,7 @@ void MainWindow::on_pushButton_9_clicked()      //备份
         //其他渠道服
         QMessageBox msgBox;
         msgBox.setText("反馈");
-        msgBox.setInformativeText("我需要对其他渠道服的适配！请联系软件作者，作者会在后续版本进行适配！\n需要打开反馈网页吗？");
+        msgBox.setInformativeText("如果您需要对其他渠道服的适配！请联系软件作者，作者会在后续版本进行适配！\n需要打开反馈网页吗？");
         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Ok);
         if(msgBox.exec()==QMessageBox::Cancel) return;
@@ -631,12 +712,11 @@ void MainWindow::on_pushButton_9_clicked()      //备份
     }
 
     ui->progressBar_copy->setValue(0);
-    copyFile(idv_dir_p_temp, idv_backup_dir_p, 0);
+    copyFile(idv_dir_p_temp, idv_backup_dir_p, 0, 0);
     QString path = idv_dir_p_temp;
     QDir dir(path);
     dir.removeRecursively();
     idv_backup_size="";
-    idv_video_size="录像文件占用大小：（手机内录像文件大小无法查看）";
     pathSize_p();
     ui->label->setText(idv_backup_size_p);   //备份文件占用大小
 }
@@ -653,54 +733,54 @@ void MainWindow::on_pushButton_10_clicked()     //还原
     }
     //判断文件夹是否存在
     ui->progressBar_copy->setValue(0);
-    copyFile(idv_backup_dir_p,idv_dir_p_temp , 0);
+    copyFile(idv_backup_dir_p,idv_dir_p_temp , 0, 0);
 
     switch (ui->comboBox->currentIndex()) {
     case 0 : {
         //官服
-        system("adb push C:/cqbu/ storage/emulated/0/Android/data/com.netease.dwrg/files/netease/dwrg.common/Documents/video");
+        system("adb push C:/cqbu/video/ /storage/emulated/0/Android/data/com.netease.dwrg/files/netease/dwrg.common/Documents");
         break;
     }
     case 1 : {
         //B服
-        system("adb push C:/cqbu/ storage/emulated/0/Android/data/com.netease.dwrg.bili/files/netease/dwrg.common/Documents/video");
+        system("adb push C:/cqbu/video/ /storage/emulated/0/Android/data/com.netease.dwrg.bili/files/netease/dwrg.common/Documents");
         break;
     }
     case 2 : {
         //vivo服
-        system("adb push C:/cqbu/ storage/emulated/0/Android/data/com.netease.dwrg5.vivo/files/netease/dwrg.common/Documents/video");
+        system("adb push C:/cqbu/video/ /storage/emulated/0/Android/data/com.netease.dwrg5.vivo/files/netease/dwrg.common/Documents");
         break;
     }
     case 3 : {
         //小米服
-        system("adb push C:/cqbu/ storage/emulated/0/Android/data/com.netease.dwrg.mi/files/netease/dwrg.common/Documents/video");
+        system("adb push C:/cqbu/video/ /storage/emulated/0/Android/data/com.netease.dwrg.mi/files/netease/dwrg.common/Documents");
         break;
     }
     case 4 : {
         //华为服
-        system("adb push C:/cqbu/ storage/emulated/0/Android/data/com.netease.dwrg.huawei/files/netease/dwrg.common/Documents/video");
+        system("adb push C:/cqbu/video/ /storage/emulated/0/Android/data/com.netease.dwrg.huawei/files/netease/dwrg.common/Documents");
         break;
     }
     case 5 : {
         //应用宝服 com.tencent.tmgp.dwrg
-        system("adb push C:/cqbu/ storage/emulated/0/Android/data/com.tencent.tmgp.dwrg/files/netease/dwrg.common/Documents/video");
+        system("adb push C:/cqbu/video/ /storage/emulated/0/Android/data/com.tencent.tmgp.dwrg/files/netease/dwrg.common/Documents");
         break;
     }
     case 6 : {
         //魅族服
-        system("adb push C:/cqbu/ storage/emulated/0/Android/data/com.netease.dwrg.mz/files/netease/dwrg.common/Documents/video");
+        system("adb push C:/cqbu/video/ /storage/emulated/0/Android/data/com.netease.dwrg.mz/files/netease/dwrg.common/Documents");
         break;
     }
     case 7 : {
         //OPPO 服    com.netease.dwrg.nearme.gamecenter
-        system("adb push C:/cqbu/ storage/emulated/0/Android/data/com.netease.dwrg.nearme.gamecenter/files/netease/dwrg.common/Documents/video");
+        system("adb push C:/cqbu/video/ /storage/emulated/0/Android/data/com.netease.dwrg.nearme.gamecenter/files/netease/dwrg.common/Documents");
         break;
     }
     case 8 :{
         //其他渠道服
         QMessageBox msgBox;
         msgBox.setText("反馈");
-        msgBox.setInformativeText("我需要对其他渠道服的适配！请联系软件作者，作者会在后续版本进行适配！\n需要打开反馈网页吗？");
+        msgBox.setInformativeText("如果您需要对其他渠道服的适配！请联系软件作者，作者会在后续版本进行适配！\n需要打开反馈网页吗？");
         msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Ok);
         if(msgBox.exec()==QMessageBox::Cancel) return;
@@ -768,20 +848,11 @@ void MainWindow::on_pushButton_12_clicked()     //删除备份文件
     return;
 }
 
-void MainWindow::on_pushButton_5_clicked()  //清屏
-{
-    system("cls");
-}
-
 void MainWindow::on_pushButton_13_clicked() //ip地址
 {
-    system("ipconfig /all");
-}
-
-void doNotPushMe()
-{
-
-    //return;
+    system("start QueryIPAddress.exe");
+    //WinExec( "QueryIPAddress.exe", SW_MINIMIZE );
+    //WinExec("cmd /k ipconfig /all", SW_HIDE);
 }
 
 void MainWindow::on_pushButton_14_clicked() //别点我
@@ -826,8 +897,24 @@ void MainWindow::on_commandLinkButton_clicked()
         msgBox.setDefaultButton(QMessageBox::Ok);
         if(msgBox.exec()==QMessageBox::Cancel) return;
         else{
-            QDesktopServices::openUrl(QUrl(QString("https://chiqiao.rthe.net/download.html")));
+            QDesktopServices::openUrl(QUrl(QString("http://www.chiqiao.plus/")));
             return;
         }
     }
 }
+
+
+void MainWindow::on_commandLinkButton_2_clicked()
+{
+    //使用帮助
+    QDesktopServices::openUrl(QUrl(QString("http://www.chiqiao.plus/help.html")));
+}
+
+
+
+void MainWindow::on_commandLinkButton_3_clicked()
+{
+    //赞助我
+    QDesktopServices::openUrl(QUrl(QString("https://www.afdian.net/@chiqiao")));
+}
+

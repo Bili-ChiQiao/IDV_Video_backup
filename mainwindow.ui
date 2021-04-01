@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>722</width>
-    <height>456</height>
+    <width>852</width>
+    <height>499</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,50 +17,24 @@
    <string notr="true"/>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>300</x>
-      <y>320</y>
-      <width>211</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>备份文件占用大小：</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>300</x>
-      <y>340</y>
-      <width>211</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>录像文件占用大小：</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>500</x>
-      <y>360</y>
+      <x>650</x>
+      <y>410</y>
       <width>131</width>
       <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>版本号：beta v0.2.0</string>
+     <string>版本号：beta v0.6.0</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>500</x>
-      <y>380</y>
+      <x>650</x>
+      <y>390</y>
       <width>161</width>
       <height>20</height>
      </rect>
@@ -77,12 +51,12 @@
      <rect>
       <x>20</x>
       <y>20</y>
-      <width>501</width>
-      <height>291</height>
+      <width>611</width>
+      <height>351</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -92,9 +66,9 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>30</y>
-        <width>451</width>
-        <height>91</height>
+        <y>40</y>
+        <width>251</width>
+        <height>131</height>
        </rect>
       </property>
       <property name="title">
@@ -104,9 +78,9 @@
        <property name="geometry">
         <rect>
          <x>40</x>
-         <y>30</y>
-         <width>101</width>
-         <height>41</height>
+         <y>40</y>
+         <width>91</width>
+         <height>31</height>
         </rect>
        </property>
        <property name="cursor">
@@ -116,24 +90,40 @@
         <string>请选择</string>
        </property>
       </widget>
+      <widget class="QLabel" name="label_2">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>90</y>
+         <width>211</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>录像文件占用大小：</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QGroupBox" name="groupBox_2">
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>150</y>
+        <y>190</y>
         <width>451</width>
-        <height>91</height>
+        <height>101</height>
        </rect>
       </property>
       <property name="title">
        <string>第二步：请选择功能</string>
       </property>
       <widget class="QPushButton" name="pushButton_4">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>30</y>
+         <y>40</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -146,10 +136,13 @@
        </property>
       </widget>
       <widget class="QPushButton" name="pushButton_6">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>120</x>
-         <y>30</y>
+         <y>40</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -162,10 +155,13 @@
        </property>
       </widget>
       <widget class="QPushButton" name="pushButton_7">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>220</x>
-         <y>30</y>
+         <y>40</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -178,10 +174,13 @@
        </property>
       </widget>
       <widget class="QPushButton" name="pushButton_8">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>320</x>
-         <y>30</y>
+         <y>40</y>
          <width>111</width>
          <height>31</height>
         </rect>
@@ -191,6 +190,51 @@
        </property>
        <property name="text">
         <string>删除所有备份文件</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_7">
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>40</y>
+        <width>251</width>
+        <height>131</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>第一步：请选择第五人格客户端所在路径</string>
+      </property>
+      <widget class="QPushButton" name="pushButton_5">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>40</x>
+         <y>40</y>
+         <width>91</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="text">
+        <string>请选择</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>90</y>
+         <width>181</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>备份文件占用大小：</string>
        </property>
       </widget>
      </widget>
@@ -204,8 +248,8 @@
        <rect>
         <x>20</x>
         <y>20</y>
-        <width>191</width>
-        <height>71</height>
+        <width>181</width>
+        <height>101</height>
        </rect>
       </property>
       <property name="title">
@@ -217,8 +261,8 @@
        </property>
        <property name="geometry">
         <rect>
-         <x>30</x>
-         <y>30</y>
+         <x>40</x>
+         <y>40</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -236,8 +280,8 @@
        <rect>
         <x>220</x>
         <y>20</y>
-        <width>261</width>
-        <height>71</height>
+        <width>301</width>
+        <height>101</height>
        </rect>
       </property>
       <property name="title">
@@ -250,7 +294,7 @@
        <property name="geometry">
         <rect>
          <x>30</x>
-         <y>30</y>
+         <y>40</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -262,13 +306,26 @@
         <string>请选择</string>
        </property>
       </widget>
+      <widget class="QLabel" name="label_6">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>30</y>
+         <width>171</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>备份文件占用大小：</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QGroupBox" name="groupBox_5">
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>110</y>
-        <width>461</width>
+        <y>140</y>
+        <width>511</width>
         <height>131</height>
        </rect>
       </property>
@@ -423,14 +480,27 @@
        </property>
       </widget>
      </widget>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>80</y>
+        <width>161</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>数据无价，谨慎操作！</string>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QProgressBar" name="progressBar_copy">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>330</y>
-      <width>241</width>
+      <x>30</x>
+      <y>400</y>
+      <width>261</width>
       <height>23</height>
      </rect>
     </property>
@@ -441,37 +511,21 @@
    <widget class="QGroupBox" name="groupBox_6">
     <property name="geometry">
      <rect>
-      <x>530</x>
-      <y>40</y>
+      <x>650</x>
+      <y>30</y>
       <width>171</width>
-      <height>171</height>
+      <height>191</height>
      </rect>
     </property>
     <property name="title">
-     <string>其他功能</string>
+     <string>实用功能</string>
     </property>
-    <widget class="QPushButton" name="pushButton_5">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>30</y>
-       <width>81</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="cursor">
-      <cursorShape>PointingHandCursor</cursorShape>
-     </property>
-     <property name="text">
-      <string>清屏</string>
-     </property>
-    </widget>
     <widget class="QPushButton" name="pushButton_13">
      <property name="geometry">
       <rect>
-       <x>20</x>
-       <y>70</y>
-       <width>81</width>
+       <x>30</x>
+       <y>40</y>
+       <width>91</width>
        <height>31</height>
       </rect>
      </property>
@@ -485,9 +539,9 @@
     <widget class="QPushButton" name="pushButton_14">
      <property name="geometry">
       <rect>
-       <x>20</x>
-       <y>110</y>
-       <width>81</width>
+       <x>30</x>
+       <y>90</y>
+       <width>91</width>
        <height>31</height>
       </rect>
      </property>
@@ -498,12 +552,62 @@
       <string>别点我</string>
      </property>
     </widget>
+    <widget class="QPushButton" name="pushButton_15">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>140</y>
+       <width>91</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>PointingHandCursor</cursorShape>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    font-family: &quot;Microsoft YaHei&quot;;
+    font-size: 16px;
+    color: #BDC8E2;
+    font-weight: bold;
+
+    text-align: center;
+
+    border-style: solid;
+    border-width: 2px;
+    border-color: aqua;
+    border-radius: 20px;
+
+    background-color: #2E3648;
+    background-repeat: no-repeat;
+    background-position: left center;
+}
+QPushButton:hover{
+	color: red;
+	border-color: green;
+    background-color: aqua;
+}
+QPushButton:pressed{
+	color: green;
+	border-color: blueviolet;
+    background-color: black;
+}
+QPushButton:disabled{
+	color: blue;
+	border-color: brown;
+    background-color: aqua;
+}</string>
+     </property>
+     <property name="text">
+      <string>别点我</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QCommandLinkButton" name="commandLinkButton">
     <property name="geometry">
      <rect>
-      <x>530</x>
-      <y>270</y>
+      <x>650</x>
+      <y>290</y>
       <width>171</width>
       <height>41</height>
      </rect>
@@ -515,8 +619,8 @@
    <widget class="QCommandLinkButton" name="commandLinkButton_2">
     <property name="geometry">
      <rect>
-      <x>530</x>
-      <y>220</y>
+      <x>650</x>
+      <y>240</y>
       <width>168</width>
       <height>41</height>
      </rect>
@@ -525,13 +629,39 @@
      <string>使用教学</string>
     </property>
    </widget>
+   <widget class="QCommandLinkButton" name="commandLinkButton_3">
+    <property name="geometry">
+     <rect>
+      <x>650</x>
+      <y>340</y>
+      <width>171</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>赞助我</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_7">
+    <property name="geometry">
+     <rect>
+      <x>320</x>
+      <y>400</y>
+      <width>161</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>数据无价，谨慎操作！</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>722</width>
+     <width>852</width>
      <height>22</height>
     </rect>
    </property>

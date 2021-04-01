@@ -20,7 +20,7 @@ SOURCES += \
 
 HEADERS += \
     mainwindow.h \
-    virsion.h
+    version.h
 
 FORMS += \
     mainwindow.ui
@@ -34,4 +34,3 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RC_ICONS = logo_n.ico
-CONFIG+= console
